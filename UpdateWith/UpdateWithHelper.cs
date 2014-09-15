@@ -350,7 +350,6 @@ namespace UpdateWithExamples
 		public delegate bool UpdateArgumentToPropertyComparison(ParameterInfo updateArgument, PropertyInfo sourceProperty);
 		public delegate bool UpdateArgumentToConstructorArgumentComparison(ParameterInfo updateArgument, ConstructorInfo constructor, ParameterInfo constructorArgument);
 		public delegate bool PropertyToConstructorArgumentComparison(PropertyInfo sourceProperty, ConstructorInfo constructor, ParameterInfo constructorArgument);
-		public delegate T UpdateWithSignature<T>(T source, params object[] updateValues);
 		public interface ICacheGenerators
 		{
 			/// <summary>

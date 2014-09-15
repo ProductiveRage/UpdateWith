@@ -18,7 +18,7 @@ namespace UpdateWithExamples
 		);
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static UpdateWithHelper.UpdateWithSignature<T> GetGenerator<T>(int numberOfFramesFromCallSite = 1)
+		public static UpdateWithSignature<T> GetGenerator<T>(int numberOfFramesFromCallSite = 1)
 		{
 			// See notes in the UpdateWithHelper about the use of MethodImplOptions.NoInlining and the meaning of numberOfFramesFromCallSite
 			if (numberOfFramesFromCallSite < 1)
@@ -85,7 +85,7 @@ namespace UpdateWithExamples
 			/// nor contain any null references. The declaringType should have a paramterType that is assignable to typeparam T. This should return null
 			/// if the cache can not provide the requested data.
 			/// </summary>
-			public UpdateWithHelper.UpdateWithSignature<T> GetIfAvailable<T>(Type declaringType, IEnumerable<ParameterInfo> updateArgumentParameters)
+			public UpdateWithSignature<T> GetIfAvailable<T>(Type declaringType, IEnumerable<ParameterInfo> updateArgumentParameters)
 			{
 				// This will throw argument exceptions for declaringType and updateArgumentParameters if required
 				var cacheKey = new CacheKeyData(typeof(T), declaringType, updateArgumentParameters);
@@ -93,7 +93,7 @@ namespace UpdateWithExamples
 				// If the item is available as the correct type, return it - otherwise return null (if not available or if not the required type)
 				object cachedResult;
 				if (_cache.TryGetValue(cacheKey, out cachedResult))
-					return cachedResult as UpdateWithHelper.UpdateWithSignature<T>;
+					return cachedResult as UpdateWithSignature<T>;
 				return null;
 			}
 
@@ -101,7 +101,7 @@ namespace UpdateWithExamples
 			/// This should never be called with null declaringType, updateArgumentParameters or generator references and updateArgumentParameters should
 			/// not be empty nor contain any null references. The declaringType should have a paramterType that is assignable to typeparam T.
 			/// </summary>
-			public void Set<T>(Type declaringType, IEnumerable<ParameterInfo> updateArgumentParameters, UpdateWithHelper.UpdateWithSignature<T> generator)
+			public void Set<T>(Type declaringType, IEnumerable<ParameterInfo> updateArgumentParameters, UpdateWithSignature<T> generator)
 			{
 				if (generator == null)
 					throw new ArgumentException("generator");
