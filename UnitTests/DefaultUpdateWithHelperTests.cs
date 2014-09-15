@@ -19,5 +19,13 @@ namespace UnitTests
 			var newInstance = currentInstance.UpdateWith(name: "test");
 			Assert.Equal(currentInstance, newInstance);
 		}
+
+		[Fact]
+		public void SingleConstructorArgumentMappedToSingleUpdateArgument_NoUpdateArguments()
+		{
+			var currentInstance = new NamedType("test");
+			var newInstance = currentInstance.UpdateWith();
+			Assert.Equal(currentInstance, newInstance);
+		}
 	}
 }
