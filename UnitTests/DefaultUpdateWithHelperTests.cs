@@ -82,5 +82,15 @@ namespace UnitTests
 				Console.WriteLine(currentInstance.UpdateWith(name: "test-new").Name);
 			});
 		}
+
+		[Fact]
+		public void UnmatchedConstructorArgumentsResultInAnArgumentException()
+		{
+			var currentInstance = new FaultyNamedAndPrivateNumberedType("test", 1);
+			Assert.Throws<ArgumentException>(() =>
+			{
+				Console.WriteLine(currentInstance.UpdateWith(name: "test-new").Name);
+			});
+		}
 	}
 }
