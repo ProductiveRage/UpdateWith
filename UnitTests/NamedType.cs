@@ -2,6 +2,9 @@
 
 namespace UnitTests
 {
+	/// <summary>
+	/// This is the simplest form to test against
+	/// </summary>
 	public class NamedType
 	{
 		public NamedType(string name)
