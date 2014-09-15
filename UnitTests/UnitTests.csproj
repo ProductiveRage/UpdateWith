@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="DefaultUpdateWithHelperTests.cs" />
     <Compile Include="FaultyNamedAndNumberedType.cs" />
+    <Compile Include="FaultyNamedAndPrivateNumberedType.cs" />
     <Compile Include="NamedAndPrivateNumberedType.cs" />
     <Compile Include="NamedAndNumberedType.cs" />
     <Compile Include="FaultyNamedType.cs" />
