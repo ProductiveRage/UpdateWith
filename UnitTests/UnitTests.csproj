@@ -39,7 +39,7 @@
   <ItemGroup>
     <Compile Include="DefaultUpdateWithHelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SingleConstructorArgumentEasilyMapped.cs" />
+    <Compile Include="NamedType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UpdateWith\UpdateWith.csproj">

@@ -7,7 +7,7 @@ namespace UnitTests
 		[Fact]
 		public void SingleConstructorArgumentMappedToSingleUpdateArgument()
 		{
-			var currentInstance = new SingleConstructorArgumentEasilyMapped("test");
+			var currentInstance = new NamedType("test");
 			var newInstance = currentInstance.UpdateWith(name: "test-new");
 			Assert.Equal("test-new", newInstance.Name);
 		}
@@ -15,7 +15,7 @@ namespace UnitTests
 		[Fact]
 		public void SingleConstructorArgumentMappedToSingleUpdateArgument_SameData()
 		{
-			var currentInstance = new SingleConstructorArgumentEasilyMapped("test");
+			var currentInstance = new NamedType("test");
 			var newInstance = currentInstance.UpdateWith(name: "test");
 			Assert.Equal(currentInstance, newInstance);
 		}
