@@ -38,10 +38,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultUpdateWithHelperTests.cs" />
+    <Compile Include="FaultyNamedAndNumberedType.cs" />
     <Compile Include="NamedAndPrivateNumberedType.cs" />
     <Compile Include="NamedAndNumberedType.cs" />
+    <Compile Include="FaultyNamedType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NamedType.cs" />
+    <Compile Include="RoleDetailsExtensions.cs" />
+    <Compile Include="RoleDetails.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UpdateWith\UpdateWith.csproj">
