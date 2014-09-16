@@ -27,6 +27,14 @@ namespace UpdateWithExamples
 			return _instance.GetGenerator<T>(numberOfFramesFromCallSite + 1);
 		}
 
+		public static UpdateWithSignature<T> GetGenerator<T>(MethodBase updateMethod)
+		{
+			if (updateMethod == null)
+				throw new ArgumentNullException("updateMethod");
+
+			return _instance.GetGenerator<T>(updateMethod);
+		}
+
 		public static class DefaultValues
 		{
 			static DefaultValues()
