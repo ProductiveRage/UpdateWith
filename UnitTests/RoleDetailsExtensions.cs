@@ -1,5 +1,5 @@
 ﻿using System;
-using UpdateWithExamples;
+using UpdateWith;
 
 namespace UnitTests
 {
