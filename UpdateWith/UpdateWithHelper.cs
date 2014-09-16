@@ -57,7 +57,15 @@ namespace UpdateWithExamples
 			//   arguments are structs, the method will not be inlined". Possibly the most compelling reason (aside from strict correctness and the note in the article
 			//   that "I would carefully consider explicitly coding for these heuristics because they might change in future versions of the JIT") to use this is in the
 			//   DefaultUpdateWithHelper's pass through method since it's short, has no logic and doesn't take struct arguments.
-			var updateMethod = new StackFrame(skipFrames: numberOfFramesFromCallSite, fNeedFileInfo: false).GetMethod();
+			return GetGenerator<T>(
+				new StackFrame(skipFrames: numberOfFramesFromCallSite, fNeedFileInfo: false).GetMethod()
+			);
+		}
+
+		public UpdateWithSignature<T> GetGenerator<T>(MethodBase updateMethod)
+		{
+			if (updateMethod == null)
+				throw new ArgumentNullException("updateMethod");
 
 			// If this is an instance method then the arguments should all be update values. For an extension method, the first argument should be a source reference and
 			// the subsequent arguments be the update values. There could potentially be a static method on the class, similar in form to the instance method (it would
