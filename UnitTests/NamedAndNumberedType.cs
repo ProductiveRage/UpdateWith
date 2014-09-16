@@ -1,4 +1,4 @@
-﻿using UpdateWithExamples;
+﻿using UpdateWith;
 
 namespace UnitTests
 {

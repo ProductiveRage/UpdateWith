@@ -1,4 +1,4 @@
-﻿namespace UpdateWithExamples
+﻿namespace UpdateWith
 {
 	public struct OptionalValue<T>
 	{
