@@ -35,6 +35,43 @@ namespace UpdateWithExamples
 			return _instance.GetGenerator<T>(updateMethod);
 		}
 
+		public static UpdateWithSignature1<T> GetUncachedGenerator1<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator1<T>(updateMethod);
+		}
+		public static UpdateWithSignature2<T> GetUncachedGenerator2<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator2<T>(updateMethod);
+		}
+		public static UpdateWithSignature3<T> GetUncachedGenerator3<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator3<T>(updateMethod);
+		}
+		public static UpdateWithSignature4<T> GetUncachedGenerator4<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator4<T>(updateMethod);
+		}
+		public static UpdateWithSignature5<T> GetUncachedGenerator5<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator5<T>(updateMethod);
+		}
+		public static UpdateWithSignature6<T> GetUncachedGenerator6<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator6<T>(updateMethod);
+		}
+		public static UpdateWithSignature7<T> GetUncachedGenerator7<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator7<T>(updateMethod);
+		}
+		public static UpdateWithSignature8<T> GetUncachedGenerator8<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator8<T>(updateMethod);
+		}
+		public static UpdateWithSignature9<T> GetUncachedGenerator9<T>(MethodBase updateMethod)
+		{
+			return _instance.GetUncachedGenerator9<T>(updateMethod);
+		}
+
 		public static class DefaultValues
 		{
 			static DefaultValues()
@@ -184,7 +221,7 @@ namespace UpdateWithExamples
 					if (x.NumberOfUpdateParameters != y.NumberOfUpdateParameters)
 						return false;
 
-					for (var index = 0; index < x.NumberOfUpdateParameters ; index++)
+					for (var index = 0; index < x.NumberOfUpdateParameters; index++)
 					{
 						var parameterX = x.GetUpdateParameter(index);
 						var parameterY = y.GetUpdateParameter(index);

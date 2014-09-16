@@ -67,34 +67,61 @@ namespace UpdateWithExamples
 			if (updateMethod == null)
 				throw new ArgumentNullException("updateMethod");
 
-			return GetGenerator<T>(new UpdateMethodSummary<T>(updateMethod));
-		}
-
-		private UpdateWithSignature<T> GetGenerator<T>(UpdateMethodSummary<T> updateMethodDetails)
-		{
-			if (updateMethodDetails == null)
-				throw new ArgumentNullException("updateMethodDetails");
-
+			var updateMethodDetails = new UpdateMethodSummary<T>(updateMethod);
 			var cachedGenerator = _cache.GetIfAvailable<T>(updateMethodDetails.DeclaringType, updateMethodDetails.UpdateArguments);
 			if (cachedGenerator != null)
 				return cachedGenerator;
 
+			// In this case, the delegate has a single updateValues reference - an array of update values (so argsIsAnArray is true
 			var sourceParameter = Expression.Parameter(typeof(T), "source");
 			var argsParameter = Expression.Parameter(typeof(object[]), "args");
+			var argsIsAnArray = true;
 			var generator
 				= Expression.Lambda<UpdateWithSignature<T>>(
-					GetGeneratorBodyExpression<T>(
-						updateArguments: updateMethodDetails.UpdateArguments,
-						sourceParameter: sourceParameter,
-						argsIsAnArray: true,
-						argsParameters: new[] { argsParameter }
-					),
+					GetGeneratorBodyExpression<T>(updateMethodDetails.UpdateArguments, sourceParameter, new[] { argsParameter }, argsIsAnArray),
 					sourceParameter,
 					argsParameter
 				)
 				.Compile();
 			_cache.Set<T>(updateMethodDetails.DeclaringType, updateMethodDetails.UpdateArguments, generator);
 			return generator;
+		}
+
+		public UpdateWithSignature1<T> GetUncachedGenerator1<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature1<T>>(updateMethod, 1);
+		}
+		public UpdateWithSignature2<T> GetUncachedGenerator2<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature2<T>>(updateMethod, 2);
+		}
+		public UpdateWithSignature3<T> GetUncachedGenerator3<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature3<T>>(updateMethod, 3);
+		}
+		public UpdateWithSignature4<T> GetUncachedGenerator4<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature4<T>>(updateMethod, 4);
+		}
+		public UpdateWithSignature5<T> GetUncachedGenerator5<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature5<T>>(updateMethod, 5);
+		}
+		public UpdateWithSignature6<T> GetUncachedGenerator6<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature6<T>>(updateMethod, 6);
+		}
+		public UpdateWithSignature7<T> GetUncachedGenerator7<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature7<T>>(updateMethod, 7);
+		}
+		public UpdateWithSignature8<T> GetUncachedGenerator8<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature8<T>>(updateMethod, 8);
+		}
+		public UpdateWithSignature9<T> GetUncachedGenerator9<T>(MethodBase updateMethod)
+		{
+			return (new UncachedGeneratorWrapper<T>(this)).GetUncachedGeneratorExpression<UpdateWithSignature9<T>>(updateMethod, 9);
 		}
 
 		private Expression GetGeneratorBodyExpression<T>(
@@ -411,6 +438,9 @@ namespace UpdateWithExamples
 			return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(OptionalValue<>));
 		}
 
+		/// <summary>
+		/// This class is used to wrap up validation rather than repeat it multiple times for GetGenerator, GetUncachedGenerator1, GetUncachedGenerator2, etc..
+		/// </summary>
 		private class UpdateMethodSummary<T>
 		{
 			public UpdateMethodSummary(MethodBase updateMethod)
@@ -454,6 +484,45 @@ namespace UpdateWithExamples
 			/// OptionalValue.
 			/// </summary>
 			public IEnumerable<ParameterInfo> UpdateArguments { get; private set; }
+		}
+
+		/// <summary>
+		/// This wrapper class is required to nest the types TSource and TUpdateSignature since TUpdateSignature will reference TSource (without this, there would
+		/// be an error "The type parameter cannot be used with type arguments" as one type parameter would reference another, which the compiler is not happy with)
+		/// </summary>
+		private class UncachedGeneratorWrapper<TSource>
+		{
+			private readonly UpdateWithHelper _updateWitHelper;
+			public UncachedGeneratorWrapper(UpdateWithHelper updateWitHelper)
+			{
+				if (updateWitHelper == null)
+					throw new ArgumentNullException("updateWitHelper");
+
+				_updateWitHelper = updateWitHelper;
+			}
+
+			public TUpdateSignature GetUncachedGeneratorExpression<TUpdateSignature>(MethodBase updateMethod, int numberOfUpdateArguments)
+			{
+				if (updateMethod == null)
+					throw new ArgumentNullException("updateMethod");
+				if (numberOfUpdateArguments <= 0)
+					throw new ArgumentOutOfRangeException("must be greater than zero", "numberOfUpdateArguments");
+
+				// In this case, the delegate will have one concrete argument per update value (as opposed to a single argument that is an array
+				// of update values), so argsIsAnArray is false)
+				var updateMethodDetails = new UpdateMethodSummary<TSource>(updateMethod);
+				var sourceParameter = Expression.Parameter(typeof(TSource), "source");
+				var argParameters = Enumerable.Range(0, numberOfUpdateArguments)
+					.Select(i => Expression.Parameter(typeof(object), "arg" + i))
+					.ToArray(); // Call ToArray() to evaluate this once otherwise the reference won't match when used twice below
+				var argsIsAnArray = false;
+				return
+					Expression.Lambda<TUpdateSignature>(
+						_updateWitHelper.GetGeneratorBodyExpression<TSource>(updateMethodDetails.UpdateArguments, sourceParameter, argParameters, argsIsAnArray),
+						new[] { sourceParameter }.Concat(argParameters)
+					)
+					.Compile();
+			}
 		}
 
 		public delegate bool UpdateArgumentToPropertyComparison(ParameterInfo updateArgument, PropertyInfo sourceProperty);
