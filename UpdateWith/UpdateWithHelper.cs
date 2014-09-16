@@ -67,35 +67,71 @@ namespace UpdateWithExamples
 			if (updateMethod == null)
 				throw new ArgumentNullException("updateMethod");
 
-			// If this is an instance method then the arguments should all be update values. For an extension method, the first argument should be a source reference and
-			// the subsequent arguments be the update values. There could potentially be a static method on the class, similar in form to the instance method (it would
-			// need a "source" reference from somewhere, but it shouldn't be one of the method arguments so this case would be treated like an instance update method).
-			var updateMethodArguments = updateMethod.GetParameters();
-			if (updateMethodArguments.Length < 1)
-				throw new ArgumentException("The update method must have at least one argument since there must be at least one property specified to update");
-			Type declaringType;
-			IEnumerable<ParameterInfo> updateArguments;
-			if (IsUpdateArgumentAnOptionalValueType(updateMethodArguments[0].ParameterType))
-			{
-				declaringType = updateMethod.DeclaringType;
-				if (!typeof(T).IsAssignableFrom(declaringType))
-					throw new ArgumentException("When the first update method argument is not used to specify the source reference, the method's DeclaringType is used and it must be assignable to T, which it is not here");
-				updateArguments = updateMethodArguments;
-			}
-			else
-			{
-				if (updateMethodArguments.Length < 2)
-					throw new ArgumentException("Where the first update method is a source reference, there must be at least two arguments; the source reference and at least one property to update");
-				declaringType = updateMethodArguments.First().ParameterType;
-				updateArguments = updateMethodArguments.Skip(1);
-			}
+			return GetGenerator<T>(new UpdateMethodSummary<T>(updateMethod));
+		}
 
-			var cachedGenerator = _cache.GetIfAvailable<T>(declaringType, updateArguments);
+		private UpdateWithSignature<T> GetGenerator<T>(UpdateMethodSummary<T> updateMethodDetails)
+		{
+			if (updateMethodDetails == null)
+				throw new ArgumentNullException("updateMethodDetails");
+
+			var cachedGenerator = _cache.GetIfAvailable<T>(updateMethodDetails.DeclaringType, updateMethodDetails.UpdateArguments);
 			if (cachedGenerator != null)
 				return cachedGenerator;
 
 			var sourceParameter = Expression.Parameter(typeof(T), "source");
 			var argsParameter = Expression.Parameter(typeof(object[]), "args");
+			var generator
+				= Expression.Lambda<UpdateWithSignature<T>>(
+					GetGeneratorBodyExpression<T>(
+						updateArguments: updateMethodDetails.UpdateArguments,
+						sourceParameter: sourceParameter,
+						argsIsAnArray: true,
+						argsParameters: new[] { argsParameter }
+					),
+					sourceParameter,
+					argsParameter
+				)
+				.Compile();
+			_cache.Set<T>(updateMethodDetails.DeclaringType, updateMethodDetails.UpdateArguments, generator);
+			return generator;
+		}
+
+		private Expression GetGeneratorBodyExpression<T>(
+			IEnumerable<ParameterInfo> updateArguments,
+			ParameterExpression sourceParameter,
+			IEnumerable<ParameterExpression> argsParameters,
+			bool argsIsAnArray)
+		{
+			if (updateArguments == null)
+				throw new ArgumentNullException("updateArguments");
+			var updateArgumentsArray = updateArguments.ToArray();
+			if (updateArgumentsArray.Any(arg => arg == null))
+				throw new ArgumentException("null reference encountered", "updateArguments");
+			if (!updateArgumentsArray.Any())
+				throw new ArgumentException("may not be an empty set", "updateArguments");
+			if (sourceParameter == null)
+				throw new ArgumentNullException("sourceParameter");
+			if (!typeof(T).IsAssignableFrom(sourceParameter.Type))
+				throw new ArgumentException("must represent a type that is assignable to T", "sourceParameter");
+			if (argsParameters == null)
+				throw new ArgumentNullException("argsParameters");
+			var argsParametersArray = argsParameters.ToArray();
+			if (argsParametersArray.Any(arg => arg == null))
+				throw new ArgumentException("null reference encountered", "argsParameters");
+			if (!argsParametersArray.Any())
+				throw new ArgumentException("may not be an empty set", "argsParameters");
+			if (argsIsAnArray)
+			{
+				if (argsParametersArray.Length > 1)
+					throw new ArgumentException("must only have a single element if the argument parameter is to be an array of argument values", "argsParameters");
+			}
+			else
+			{
+				if (argsParametersArray.Length != updateArgumentsArray.Length)
+					throw new ArgumentException("number of elements must match that of updateArguments if the argument parameter is not an array of argument values", "argsParameters");
+			}
+
 			var sourceType = typeof(T);
 			var updateArgumentValueDetails = updateArguments
 				.Select((p, i) => new { Argument = p, Index = i })
@@ -119,15 +155,28 @@ namespace UpdateWithExamples
 							sourceProperty.Name
 						));
 					}
-					var argArrayElement = Expression.ArrayAccess(argsParameter, Expression.Constant(argumentWithIndex.Index));
+					Expression argumentValueExpression;
+					if (argsIsAnArray)
+					{
+						// If there is a single argument that is an array of argument values, then take the element from that array (the
+						// array expression itself will always the first - and only - element in the argsParametersArray)
+						argumentValueExpression = Expression.ArrayAccess(argsParametersArray[0], Expression.Constant(argumentWithIndex.Index));
+					}
+					else
+					{
+						// If there will be one concrete argument provided for each argument value, then take it direct from the argument
+						// parameter expression array (this requires the less flexible UpdateWithSignature1, UpdateWithSignature2, etc..
+						// delegates but means that an array need not be created to pass the arguments in)
+						argumentValueExpression = argsParametersArray[argumentWithIndex.Index];
+					}
 					var indicatesChangeFromValueMethod = argument.ParameterType.GetMethod("IndicatesChangeFromValue");
 					var getValueMethod = argument.ParameterType.GetMethod("GetValue");
 					return new
 					{
 						Argument = argument,
 						InnerType = optionalValueInnerType,
-						IsChangeIndicatedRetriever = GetOptionalValueMethodCallThatTakesFallBackPropertyExpression(indicatesChangeFromValueMethod, sourceParameter, argument, argArrayElement, sourceProperty),
-						ValueRetriever = GetOptionalValueMethodCallThatTakesFallBackPropertyExpression(getValueMethod, sourceParameter, argument, argArrayElement, sourceProperty)
+						IsChangeIndicatedRetriever = GetOptionalValueMethodCallThatTakesFallBackPropertyExpression(indicatesChangeFromValueMethod, sourceParameter, argument, argumentValueExpression, sourceProperty),
+						ValueRetriever = GetOptionalValueMethodCallThatTakesFallBackPropertyExpression(getValueMethod, sourceParameter, argument, argumentValueExpression, sourceProperty)
 					};
 				})
 				.ToArray();
@@ -212,7 +261,8 @@ namespace UpdateWithExamples
 						return null;
 					}
 
-					return new {
+					return new
+					{
 						Constructor = constructor,
 						ArgumentValueRetrievers = constructorArgumentValueRetrievers,
 						ArgumentValueIndicatesChangeRetrievers = constructorArgumentValueIndicatesChangeRetrievers,
@@ -255,45 +305,51 @@ namespace UpdateWithExamples
 			// Validate the input to catch null source, inputValues or an inputValues array that doesn't have one value for each update argument in the
 			// original update method. Then use the ArgumentValueIndicatesChangeRetrievers expressions to determine whether a new instance is required
 			// or if the source reference can be passed straight back.
-			var numberOfUpdateArgumentsRequired = updateArguments.Count(); // For extension methods, this is the number of arguments other than the source reference
-			var returnTarget = Expression.Label(typeof(T));
-			var generator = 
-				Expression.Lambda<UpdateWithSignature<T>>(
-					Expression.Block(
-						Expression.IfThen(
-							Expression.Equal(sourceParameter, Expression.Constant(null)),
-							Expression.Throw(
-								Expression.Constant(new ArgumentNullException("source")),
-								typeof(T)
-							)
-						),
-						Expression.IfThen(
-							Expression.Equal(argsParameter, Expression.Constant(null)),
-							Expression.Throw(
-								Expression.Constant(new ArgumentNullException("updateValues")),
-								typeof(T)
-							)
-						),
-						Expression.IfThen(
-							Expression.NotEqual(Expression.ArrayLength(argsParameter), Expression.Constant(numberOfUpdateArgumentsRequired)),
-							Expression.Throw(
-								Expression.Constant(new ArgumentException("there must be precisely " + numberOfUpdateArgumentsRequired + " values provided", "updateValues")),
-								typeof(T)
-							)
-						),
-						Expression.IfThenElse(
-							doesNotIndicatesChange,
-							Expression.Return(returnTarget, sourceParameter),
-							Expression.Return(returnTarget, newInstanceGenerator)
-						),
-						Expression.Label(returnTarget, Expression.Constant(null, typeof(T)))
-					),
-					sourceParameter,
-					argsParameter
+			var bodyExpressions = new List<Expression>
+			{
+				Expression.IfThen(
+					Expression.Equal(sourceParameter, Expression.Constant(null)),
+					Expression.Throw(
+						Expression.Constant(new ArgumentNullException("source")),
+						typeof(T)
+					)
 				)
-				.Compile();
-			_cache.Set<T>(declaringType, updateArguments, generator);
-			return generator;
+			};
+			if (argsIsAnArray)
+			{
+				var paramsArgParameter = argsParametersArray[0];
+				bodyExpressions.Add(
+					Expression.IfThen(
+						Expression.Equal(paramsArgParameter, Expression.Constant(null)),
+						Expression.Throw(
+							Expression.Constant(new ArgumentNullException("updateValues")),
+							typeof(T)
+						)
+					)
+				);
+				var numberOfUpdateArgumentsRequired = updateArguments.Count(); // For extension methods, this is the number of arguments other than the source reference
+				bodyExpressions.Add(
+					Expression.IfThen(
+						Expression.NotEqual(Expression.ArrayLength(paramsArgParameter), Expression.Constant(numberOfUpdateArgumentsRequired)),
+						Expression.Throw(
+							Expression.Constant(new ArgumentException("there must be precisely " + numberOfUpdateArgumentsRequired + " values provided", "updateValues")),
+							typeof(T)
+						)
+					)
+				);
+			}
+			var returnTarget = Expression.Label(typeof(T));
+			bodyExpressions.Add(
+				Expression.IfThenElse(
+					doesNotIndicatesChange,
+					Expression.Return(returnTarget, sourceParameter),
+					Expression.Return(returnTarget, newInstanceGenerator)
+				)
+			);
+			bodyExpressions.Add(
+				Expression.Label(returnTarget, Expression.Constant(null, typeof(T)))
+			);
+			return Expression.Block(bodyExpressions);
 		}
 
 		private static Expression GetOptionalValueMethodCallThatTakesFallBackPropertyExpression(
@@ -353,6 +409,51 @@ namespace UpdateWithExamples
 				throw new ArgumentNullException("type");
 
 			return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(OptionalValue<>));
+		}
+
+		private class UpdateMethodSummary<T>
+		{
+			public UpdateMethodSummary(MethodBase updateMethod)
+			{
+				// If this is an instance method then the arguments should all be update values. For an extension method, the first argument should be a source reference and
+				// the subsequent arguments be the update values. There could potentially be a static method on the class, similar in form to the instance method (it would
+				// need a "source" reference from somewhere, but it shouldn't be one of the method arguments so this case would be treated like an instance update method).
+				var updateMethodArguments = updateMethod.GetParameters();
+				if (updateMethodArguments.Length < 1)
+					throw new ArgumentException("The update method must have at least one argument since there must be at least one property specified to update");
+				if (IsUpdateArgumentAnOptionalValueType(updateMethodArguments[0].ParameterType))
+				{
+					DeclaringType = updateMethod.DeclaringType;
+					if (!typeof(T).IsAssignableFrom(DeclaringType))
+						throw new ArgumentException("When the first update method argument is not used to specify the source reference, the method's DeclaringType is used and it must be assignable to T, which it is not here");
+					UpdateArguments = updateMethodArguments.ToList().AsReadOnly();
+				}
+				else
+				{
+					if (updateMethodArguments.Length < 2)
+						throw new ArgumentException("Where the first update method is a source reference, there must be at least two arguments; the source reference and at least one property to update");
+					DeclaringType = updateMethodArguments.First().ParameterType;
+					UpdateArguments = updateMethodArguments.Skip(1).ToList().AsReadOnly();
+				}
+				UpdateMethod = updateMethod;
+			}
+
+			/// <summary>
+			/// This will never be null
+			/// </summary>
+			public MethodBase UpdateMethod { get; private set; }
+
+			/// <summary>
+			/// This will never be null, it will always be assignable to the type T
+			/// </summary>
+			public Type DeclaringType { get; private set; }
+
+			/// <summary>
+			/// This will never be null, empty nor contain any null references. If the UpdateMethod is a static extension method then the first argument of that method will
+			/// be a source reference and not represent a property value to update and so will not be included in this set. Every parameter in this set will be of type
+			/// OptionalValue.
+			/// </summary>
+			public IEnumerable<ParameterInfo> UpdateArguments { get; private set; }
 		}
 
 		public delegate bool UpdateArgumentToPropertyComparison(ParameterInfo updateArgument, PropertyInfo sourceProperty);
