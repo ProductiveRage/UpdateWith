@@ -1,4 +1,4 @@
-﻿namespace UpdateWith
+﻿namespace ProdutiveRage.UpdateWith
 {
 	public struct OptionalValue<T>
 	{

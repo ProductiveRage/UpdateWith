@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("UpdateWith")]
+[assembly: AssemblyTitle("CSharpImmutableUpdateWith")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("UpdateWith")]
+[assembly: AssemblyProduct("CSharpImmutableUpdateWith")]
 [assembly: AssemblyCopyright("Copyright © Productive Rage 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
