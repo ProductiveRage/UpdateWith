@@ -14,7 +14,7 @@ namespace UnitTests
 
 		public string Name { get; private set; }
 
-		public FaultyNamedType UpdateWith(OptionalValue<string> title = new OptionalValue<string>())
+		public FaultyNamedType UpdateWith(Optional<string> title = new Optional<string>())
 		{
 			return DefaultUpdateWithHelper.GetGenerator<FaultyNamedType>()(this, title);
 		}

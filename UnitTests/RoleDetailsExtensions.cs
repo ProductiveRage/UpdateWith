@@ -11,9 +11,9 @@ namespace UnitTests
 	{
 		public static RoleDetails UpdateWith(
 			this RoleDetails source,
-			OptionalValue<string> title = new OptionalValue<string>(),
-			OptionalValue<DateTime> startDate = new OptionalValue<DateTime>(),
-			OptionalValue<DateTime?> endDateIfAny = new OptionalValue<DateTime?>())
+			Optional<string> title = new Optional<string>(),
+			Optional<DateTime> startDate = new Optional<DateTime>(),
+			Optional<DateTime?> endDateIfAny = new Optional<DateTime?>())
 		{
 			return DefaultUpdateWithHelper.GetGenerator<RoleDetails>()(source, title, startDate, endDateIfAny);
 		}

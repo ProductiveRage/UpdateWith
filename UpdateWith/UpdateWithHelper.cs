@@ -435,7 +435,7 @@ namespace ProdutiveRage.UpdateWith
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(OptionalValue<>));
+			return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Optional<>));
 		}
 
 		/// <summary>

@@ -37,9 +37,9 @@ To illustrate, here is a C# immutable class with a "magic" UpdateWith method -
       public DateTime? EndDateIfAny { get; private set; }
       
       public RoleDetails UpdateWith(
-        OptionalValue<string> title = new OptionalValue<string>(),
-        OptionalValue<DateTime> startDate = new OptionalValue<DateTime>(),
-        OptionalValue<DateTime?> endDateIfAny = new OptionalValue<DateTime?>())
+        Optional<string> title = new Optional<string>(),
+        Optional<DateTime> startDate = new Optional<DateTime>(),
+        Optional<DateTime?> endDateIfAny = new Optional<DateTime?>())
       {
         return DefaultUpdateWithHelper.GetGenerator<RoleDetails>()(this, title, startDate, endDateIfAny);
       }
@@ -49,7 +49,7 @@ This can be called with the format
 
     var updatedRole = currentRole.UpdateWith(title: "Penguin Manager");
     
-As many or as few properties may be specified as required. The **OptionalValue** is a struct with an implicit operator that means that values that it represents may be passed when an **OptionalValue** is required (as in the above example which passes a **string** for the "title" argument, not an **OptionalValue<string>**). If the property values provided are all the same as the values on the current instance, then that instance is returned back since there is no point creating a new instance with the exact same data.
+As many or as few properties may be specified as required. The **Optional** is a struct with an implicit operator that means that values that it represents may be passed when an **Optional** is required (as in the above example which passes a **string** for the "title" argument, not an **Optional<string>**). If the property values provided are all the same as the values on the current instance, then that instance is returned back since there is no point creating a new instance with the exact same data.
 
 The "GetGenerator" method inspects the calling method to retrieve the argument names in order to map them on to properties (to determine whether any changes to the current state are being specified) and to the constructor arguments, in order to find a constructor that will allow all of the specified "to-update" properties to be passed through to create a new instance. The return type from the GetGenerator method is a Func that takes the type "T" and an array of property value arguments and returns a new instance (or the same instance, if no values have been changed) of T. This Func is a compiled LINQ expression which is cached, so it should be as quick to execute as hand-crafted code. The compiled expression is cached so that repeated calls do not require it to be rebuilt each time but there *is* some overhead to looking at the calling method's arguments to see if there is already a cached expression that can be reused.
 
@@ -58,9 +58,9 @@ If you require the absolute peak of performance you can do the following, which 
       private static UpdateWithSignature<RoleDetails> updateWith
         = DefaultUpdateWithHelper.GetGenerator<RoleDetails>(typeof(RoleDetails).GetMethod("UpdateWith"));
       public RoleDetails UpdateWith(
-        OptionalValue<string> title = new OptionalValue<string>(),
-        OptionalValue<DateTime> startDate = new OptionalValue<DateTime>(),
-        OptionalValue<DateTime?> endDateIfAny = new OptionalValue<DateTime?>())
+        Optional<string> title = new Optional<string>(),
+        Optional<DateTime> startDate = new Optional<DateTime>(),
+        Optional<DateTime?> endDateIfAny = new Optional<DateTime?>())
       {
         return updateWith(this, title, startDate, endDateIfAny);
       }

@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultUpdateWithHelper.cs" />
-    <Compile Include="OptionalValue.cs" />
+    <Compile Include="Optional.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UpdateWithSignature.cs" />
     <Compile Include="UpdateWithHelper.cs" />
