@@ -1,6 +1,6 @@
 ﻿namespace ProdutiveRage.UpdateWith
 {
-	public struct OptionalValue<T>
+	public struct Optional<T>
 	{
 		private T _valueIfSet;
 		private bool _valueHasBeenSet;
@@ -23,9 +23,9 @@
 			return !value.Equals(_valueIfSet);
 		}
 
-		public static implicit operator OptionalValue<T>(T value)
+		public static implicit operator Optional<T>(T value)
 		{
-			return new OptionalValue<T>
+			return new Optional<T>
 			{
 				_valueIfSet = value,
 				_valueHasBeenSet = true

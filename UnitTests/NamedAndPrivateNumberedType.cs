@@ -18,7 +18,7 @@ namespace UnitTests
 
 		public string Name { get; private set; }
 
-		public NamedAndPrivateNumberedType UpdateWith(OptionalValue<string> name = new OptionalValue<string>())
+		public NamedAndPrivateNumberedType UpdateWith(Optional<string> name = new Optional<string>())
 		{
 			return DefaultUpdateWithHelper.GetGenerator<NamedAndPrivateNumberedType>()(this, name);
 		}
