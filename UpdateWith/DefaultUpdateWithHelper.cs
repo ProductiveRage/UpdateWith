@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace UpdateWith
+namespace ProdutiveRage.UpdateWith
 {
 	public static class DefaultUpdateWithHelper
 	{

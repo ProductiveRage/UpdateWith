@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace UpdateWith
+namespace ProdutiveRage.UpdateWith
 {
 	public class UpdateWithHelper
 	{

@@ -7,8 +7,8 @@
     <ProjectGuid>{5AE4FE83-B8B2-47D1-978F-21FAA168910B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UpdateWith</RootNamespace>
-    <AssemblyName>UpdateWith</AssemblyName>
+    <RootNamespace>ProdutiveRage.UpdateWith</RootNamespace>
+    <AssemblyName>ProdutiveRage.UpdateWith</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
