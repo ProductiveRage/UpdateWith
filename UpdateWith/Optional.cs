@@ -1,4 +1,6 @@
-﻿namespace ProdutiveRage.UpdateWith
+﻿using System;
+
+namespace ProdutiveRage.UpdateWith
 {
 	public struct Optional<T>
 	{
@@ -14,6 +16,9 @@
 		{
 			if (!_valueHasBeenSet)
 				return false;
+
+			if ((value != null) && (value is IEquatable<T>))
+				return !((IEquatable<T>)value).Equals(value);
 
 			if ((value == null) && (_valueIfSet == null))
 				return false;
