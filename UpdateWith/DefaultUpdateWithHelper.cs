@@ -237,7 +237,7 @@ namespace ProdutiveRage.UpdateWith
 						throw new ArgumentNullException("obj");
 					var hash = obj.DeclaringType.GetHashCode() ^ obj.TargetType.GetHashCode();
 					for (var index = 0; index < obj.NumberOfUpdateParameters; index++)
-						hash = hash ^ obj.GetUpdateParameter(index).GetHashCode();
+						hash = (3 * hash) ^ obj.GetUpdateParameter(index).GetHashCode();
 					return hash;
 				}
 			}
