@@ -18,7 +18,7 @@ namespace ProdutiveRage.UpdateWith
 				return false;
 
 			if ((value != null) && (value is IEquatable<T>))
-				return !((IEquatable<T>)value).Equals(value);
+				return !((IEquatable<T>)value).Equals(_valueIfSet);
 
 			if ((value == null) && (_valueIfSet == null))
 				return false;
